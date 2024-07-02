@@ -1,13 +1,10 @@
 batch_size: 128
+data_dir: "/content/drive/MyDrive/DL\u57FA\u790E\u8B1B\u5EA7/\u6700\u7D42\u8AB2\u984C\
+  /data"
+device: cuda:0
 epochs: 80
 lr: 0.001
-
-device: cuda:0
+model_path: null
 num_workers: 4
 seed: 1234
-use_wandb: False
-
-data_dir: data
-
-# Evaluation
-model_path: 
+use_wandb: false
