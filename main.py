@@ -14,8 +14,9 @@ from src.models import BasicConvClassifier
 from src.utils import set_seed
 
 
-@hydra.main(version_base=None, config_path="configs", config_name="config")
+@hydra.main(version_base=None, config_path="configs", config_name="config_colab")
 def run(args: DictConfig):
+    print("Config loaded: ", args)  # 読み込まれた設定の内容を表示
     set_seed(args.seed)
     logdir = hydra.core.hydra_config.HydraConfig.get().runtime.output_dir
     
