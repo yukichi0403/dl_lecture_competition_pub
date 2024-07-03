@@ -19,7 +19,6 @@ class CustomModel(nn.Module):
     def expand_dims(self, images):
         # Expand dims to [B, H, W, 3]
         images = images.unsqueeze(3).expand(-1, -1, -1, 3)
-        print(images.shape)  # Debug print to check dimensions
         images = images.permute(0, 3, 1, 2)
         return images
 

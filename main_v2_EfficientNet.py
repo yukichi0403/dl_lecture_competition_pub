@@ -9,9 +9,9 @@ import wandb
 from termcolor import cprint
 from tqdm import tqdm
 
-from src.datasets import ThingsMEGDataset
-from src.models import BasicConvClassifier
-from src.utils import set_seed
+from src.datasets import *
+from src.models import *
+from src.utils import *
 
 from torch.utils.data import DataLoader, ConcatDataset, Subset
 from sklearn.model_selection import StratifiedKFold
@@ -53,7 +53,7 @@ def run(args: DictConfig):
     # 例として、TrainとValidのデータセットを読み込み
     print(f"Now Loading Train/Valid Datasets")
     train_set = ThingsMEGDataset("train", args.data_dir)
-    valid_set = ThingsMEGDataset("valid", args.data_dir)
+    valid_set = ThingsMEGDataset("val", args.data_dir)
     # TrainとValidを結合
     combined_dataset = ConcatDataset([train_set, valid_set])
     X = []; y = []
@@ -66,7 +66,7 @@ def run(args: DictConfig):
     skf = StratifiedKFold(n_splits=args.num_splits, shuffle=True, random_state=args.seed)
         
     for fold, (train_index, val_index) in enumerate(skf.split(X, y)):
-        print(f"Now training for fold {fold+1}/{args.num_splits}")
+        print(f"Now training for fold {fold+1}/{args.num_splits}. Val label unique num: {len(set(y[val_index]))}")
         # トレーニングとテストのデータセットを作成
         train_subsampler = Subset(combined_dataset, train_index)
         val_subsampler = Subset(combined_dataset, val_index)
@@ -78,8 +78,8 @@ def run(args: DictConfig):
         # ------------------
         #       Model
         # ------------------
-        model = BasicConvClassifier(
-            train_set.num_classes, train_set.seq_len, train_set.num_channels
+        model = CustomModel(
+            args.backbone ,train_set.num_classes
         ).to(args.device)
 
         # ------------------
@@ -163,8 +163,8 @@ def run(args: DictConfig):
 
     folds_preds = []
     for fold in range(args.num_splits):
-        model = BasicConvClassifier(
-            train_set.num_classes, train_set.seq_len, train_set.num_channels
+        model = CustomModel(
+            args.backbone ,train_set.num_classes
         ).to(args.device)
         model.load_state_dict(torch.load(os.path.join(logdir, f"model_best_{fold}.pt"), map_location=args.device))
         preds = [] 
