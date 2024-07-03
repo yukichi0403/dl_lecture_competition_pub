@@ -1,8 +1,13 @@
 batch_size: 128
 epochs: 20
 lr: 1e-3
+num_splits: 5
 early_stopping_rounds: 10
-backbone: "
+
+expname: Effnet0b
+ver: 1
+
+backbone: efficientnet_b0
 
 LR_scheduler: OneCycleLR
 LR_scheduler_params:

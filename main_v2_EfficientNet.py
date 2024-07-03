@@ -56,6 +56,7 @@ def run(args: DictConfig):
     valid_set = ThingsMEGDataset("valid", args.data_dir)
     # TrainとValidを結合
     combined_dataset = ConcatDataset([train_set, valid_set])
+    X = []; y = []
     for data in combined_dataset:
         X.append(data[0])
         y.append(data[1])
@@ -150,15 +151,10 @@ def run(args: DictConfig):
                 cprint("Early stopping.", "cyan")
                 break
 
-        
-        if os.path.exists(model_path):
-            shutil.copy(model_path, drive_dir)
-            print(f'Model saved to Google Drive: {drive_dir}')
     
     # ----------------------------------
     #  Start evaluation with best model
-    # ----------------------------------
-    
+    # ----------------------------------    
     print("Now Loading Test Datasets")
     test_set = ThingsMEGDataset("test", args.data_dir)
     test_loader = torch.utils.data.DataLoader(
@@ -184,19 +180,15 @@ def run(args: DictConfig):
     cprint(f"Submission {final_preds.shape} saved at {logdir}", "cyan")
 
     # Google Driveにファイルをコピー
-    drive_dir = '/content/drive/MyDrive/YourProjectFolder'
-    if not os.path.exists(drive_dir):
-        os.makedirs(drive_dir)
-    
-    model_path = os.path.join(logdir, 'model.pth')
-    submission_path = os.path.join(logdir, 'submission.csv')
+    drive_dir = os.path.join(args.data_dir, args.expname)
+    os.makedirs(drive_dir, exist_ok=True)
 
-    if os.path.exists(model_path):
-        shutil.copy(model_path, drive_dir)
+    if os.path.exists(logdir):
+        shutil.copy(logdir, drive_dir)
         print(f'Model saved to Google Drive: {drive_dir}')
 
-    if os.path.exists(submission_path):
-        shutil.copy(submission_path, drive_dir)
+    if os.path.exists(logdir):
+        shutil.copy(logdir, drive_dir)
         print(f'Submission file saved to Google Drive: {drive_dir}')
 
 
