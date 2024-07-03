@@ -6,7 +6,7 @@ import timm
 
 
 class CustomModel(nn.Module):
-    def __init__(self, model_name, model_save_path=None, num_classes: int = 6, pretrained: bool = True):
+    def __init__(self, model_name, num_classes: int = 1854, pretrained: bool = True):
         super(CustomModel, self).__init__()
         self.encoder = timm.create_model(model_name, pretrained=pretrained)
         self.features = nn.Sequential(*list(self.encoder.children())[:-2])
