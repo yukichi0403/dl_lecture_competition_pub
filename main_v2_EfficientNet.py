@@ -180,7 +180,7 @@ def run(args: DictConfig):
     cprint(f"Submission {final_preds.shape} saved at {logdir}", "cyan")
 
     # Google Driveにファイルをコピー
-    drive_dir = os.path.join(args.data_dir, args.expname)
+    drive_dir = os.path.join(args.data_dir, f"{args.expname}_{args.ver}", )
     os.makedirs(drive_dir, exist_ok=True)
 
     if os.path.exists(logdir):
