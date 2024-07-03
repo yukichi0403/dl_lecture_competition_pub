@@ -2,7 +2,36 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from einops.layers.torch import Rearrange
+import timm
 
+
+class CustomModel(nn.Module):
+    def __init__(self, model_name, model_save_path=None ,num_classes: int = 6, pretrained: bool = True):
+        super(CustomModel, self).__init__()
+        self.encoder = timm.create_model(model_name,pretrained=pretrained,)
+        self.features = nn.Sequential(*list(self.encoder.children())[:-2])
+        self.GAP = nn.AdaptiveAvgPool2d(1)
+
+        self.decoder = nn.Sequential(nn.Flatten(),
+                                     nn.Linear(self.encoder.num_features, num_classes))
+
+    def __reshape_input(self, eeg):
+        """
+        Reshapes input ([batch, 200, 80]) -> ([batch, channel, 80, 200]) monotone image.
+        """
+        eeg = torch.unsqueeze(eeg, dim=1)
+        eeg = torch.cat([eeg,eeg,eeg], dim=1)
+        
+        return eeg
+
+    def forward(self, spec_or_eeg):
+        spec_or_eeg  = self.__reshape_input(spec_or_eeg)
+        out = self.features(spec_or_eeg)
+
+        out = self.GAP(out)
+        out = self.decoder(out)
+
+        return out
 
 class BasicConvClassifier(nn.Module):
     def __init__(

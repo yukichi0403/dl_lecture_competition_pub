@@ -2,6 +2,7 @@ batch_size: 128
 epochs: 20
 lr: 1e-3
 early_stopping_rounds: 10
+backbone: "
 
 LR_scheduler: OneCycleLR
 LR_scheduler_params:

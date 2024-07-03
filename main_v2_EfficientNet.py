@@ -150,7 +150,10 @@ def run(args: DictConfig):
                 cprint("Early stopping.", "cyan")
                 break
 
-            
+        
+        if os.path.exists(model_path):
+            shutil.copy(model_path, drive_dir)
+            print(f'Model saved to Google Drive: {drive_dir}')
     
     # ----------------------------------
     #  Start evaluation with best model
