@@ -1,6 +1,14 @@
 batch_size: 128
-epochs: 80
-lr: 0.001
+epochs: 20
+lr: 1e-3
+early_stopping_rounds: 10
+
+LR_scheduler: OneCycleLR
+LR_scheduler_params:
+  max_lr: 1e-2
+  steps_per_epoch: 100
+  epochs: 20
+  pct_start: 0.3
 
 device: cuda:0
 num_workers: 4
@@ -8,6 +16,7 @@ seed: 1234
 use_wandb: False
 
 data_dir: '/content/drive/MyDrive/DL基礎講座/最終課題/data' #data
+model_save_dir: model
 
 # Evaluation
 model_path: 
