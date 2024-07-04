@@ -13,8 +13,8 @@ backbone: efficientnet_b0
 LR_scheduler: OneCycleLR
 LR_scheduler_params:
   max_lr: 1e-2
-  steps_per_epoch: 100
-  epochs: 20
+  steps_per_epoch: 1027
+  epochs: 10
   pct_start: 0.3
 
 device: cuda:0
