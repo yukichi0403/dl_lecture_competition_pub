@@ -1,12 +1,13 @@
 import os
 import numpy as np
 import torch
+from scipy.signal import resample
 from typing import Tuple
 from termcolor import cprint
 
 
 class ThingsMEGDataset(torch.utils.data.Dataset):
-    def __init__(self, split: str, data_dir: str = "data", augs = None) -> None:
+    def __init__(self, split: str, data_dir: str = "data", augs = None, resampling_rate = None) -> None:
         super().__init__()
         
         assert split in ["train", "val", "test"], f"Invalid split: {split}"
@@ -17,6 +18,7 @@ class ThingsMEGDataset(torch.utils.data.Dataset):
         self.subject_idxs = torch.load(os.path.join(data_dir, f"{split}_subject_idxs.pt"))
 
         self.augs = augs
+        self.resampling_rate = resampling_rate
         
         if split in ["train", "val"]:
             self.y = torch.load(os.path.join(data_dir, f"{split}_y.pt"))
@@ -26,13 +28,34 @@ class ThingsMEGDataset(torch.utils.data.Dataset):
         return len(self.X)
 
     def __getitem__(self, i):
-        X = self.X[i]
+        X = self._standarize(self.X[i])
+        if self.resampling_rate:
+            X = self._resample(X[i], self.resampling_rate)
         if self.augs:
             X = self._augment(X, self.augs)
         if hasattr(self, "y"):
             return X, self.y[i], self.subject_idxs[i]
         else:
             return X, self.subject_idxs[i]
+        
+    def _standarize(self, img):
+        # Log transformation
+        #img = np.clip(img,np.exp(-4),np.exp(8))
+        #img = np.log(img)
+        
+        # Standarize per image
+        ep = 1e-6
+        m = np.nanmean(img.flatten())
+        s = np.nanstd(img.flatten())
+        img = (img-m)/(s+ep)
+        img = np.nan_to_num(img, nan=0.0)
+
+        return img
+    
+    def _resample(self, img, new_freq):
+        num_samples = int(img.shape[-1] * new_freq / 200)  # 元のサンプリングレートは200Hz
+        resampled_data = resample(img.numpy(), num_samples, axis=-1)
+        return torch.tensor(resampled_data)
     
     def _random_transform(self, img, transform):
         return transform(image=img)['image']
