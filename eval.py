@@ -28,38 +28,40 @@ def run(args: DictConfig):
         test_set, shuffle=False, batch_size=args.batch_size, num_workers=args.num_workers
     )
 
-
     folds_preds = []
     for fold in range(args.num_splits):
+        print(f"Fold {fold+1}/{args.num_splits}")
         model = CustomModel(
             args.backbone,
             args.num_classes
         ).to(args.device)
         model.load_state_dict(torch.load(os.path.join(args.model_path, f"model_best_{fold}.pt"), map_location=args.device))
-        preds = [] 
+        
         model.eval()
+        preds = [] 
         for X, subject_idxs in tqdm(test_loader, desc="Validation"):        
             preds.append(model(X.to(args.device)).detach().cpu())
-            preds = torch.cat(preds, dim=0).numpy()
         
+        preds = torch.cat(preds, dim=0).numpy()
         folds_preds.append(preds)
     
     final_preds = np.mean(folds_preds, axis=0)
-    np.save(os.path.join(logdir, "submission"), final_preds)
+    np.save(os.path.join(savedir, "submission.npy"), final_preds)
     cprint(f"Submission {final_preds.shape} saved at {savedir}", "cyan")
 
     # Google Driveにファイルをコピー
-    drive_dir = os.path.join(args.data_dir, f"{args.expname}_{args.ver}", )
+    drive_dir = os.path.join(args.data_dir, f"{args.expname}_{args.ver}")
     os.makedirs(drive_dir, exist_ok=True)
 
-    if os.path.exists(savedir):
-        shutil.copy(savedir, drive_dir)
-        print(f'Model saved to Google Drive: {drive_dir}')
-
-    if os.path.exists(savedir):
-        shutil.copy(savedir, drive_dir)
+    submission_path = os.path.join(savedir, "submission.npy")
+    if os.path.exists(submission_path):
+        shutil.copy(submission_path, drive_dir)
         print(f'Submission file saved to Google Drive: {drive_dir}')
 
+    model_path = os.path.join(savedir, f"model_best_{fold}.pt")
+    if os.path.exists(model_path):
+        shutil.copy(model_path, drive_dir)
+        print(f'Model saved to Google Drive: {drive_dir}')
 
 if __name__ == "__main__":
     run()
