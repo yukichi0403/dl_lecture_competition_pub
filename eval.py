@@ -13,6 +13,9 @@ from src.datasets import *
 from src.models import *
 from src.utils import *
 
+import shutil
+import gc
+
 
 @torch.no_grad()
 @hydra.main(version_base=None, config_path="configs", config_name="config_colab")
