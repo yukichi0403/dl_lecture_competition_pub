@@ -165,6 +165,9 @@ def run(args: DictConfig):
     # ----------------------------------
     #  Start evaluation with best model
     # ----------------------------------    
+    del train_loader, val_loader, train_subsampler, val_subsampler
+    gc.collect()
+    
     print("Now Loading Test Datasets")
     test_set = ThingsMEGDataset("test", args.data_dir)
     test_loader = torch.utils.data.DataLoader(
