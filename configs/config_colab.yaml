@@ -1,5 +1,5 @@
-batch_size: 64
-epochs:1
+batch_size: 128
+epochs: 1
 lr: 1e-3
 num_splits: 5
 early_stopping_rounds: 10

@@ -70,12 +70,12 @@ def run(args: DictConfig):
     gc.collect()
 
     # メモリ使用量を減らすためにデータセット全体をメモリにロードしない
-    y = get_labels(combined_dataset)
+    labels = get_labels(combined_dataset)
     
     skf = StratifiedKFold(n_splits=args.num_splits, shuffle=True, random_state=args.seed)
         
-    for fold, (train_index, val_index) in enumerate(skf.split(np.zeros(len(y)), y)):
-        print(f"Now training for fold {fold+1}/{args.num_splits}. Val label unique num: {len(set(y[val_index]))}")
+    for fold, (train_index, val_index) in enumerate(skf.split(np.zeros(len(labels)), labels)):
+        print(f"Now training for fold {fold+1}/{args.num_splits}. Val label unique num: {len(set(labels[val_index]))}")
         # トレーニングとテストのデータセットを作成
         train_subsampler = Subset(combined_dataset, train_index)
         val_subsampler = Subset(combined_dataset, val_index)
