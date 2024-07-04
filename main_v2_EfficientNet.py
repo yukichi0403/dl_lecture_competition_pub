@@ -157,7 +157,7 @@ def run(args: DictConfig):
             no_improve_epochs = 0
         else:
             no_improve_epochs += 1
-            if no_improve_epochs > args.early_stopping_epochs:
+            if no_improve_epochs > args.early_stopping_rounds:
                 cprint("Early stopping.", "cyan")
                 break
 
