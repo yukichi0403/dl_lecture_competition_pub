@@ -135,31 +135,31 @@ def run(args: DictConfig):
                 acc = accuracy(y_pred, y)
                 train_acc.append(acc.item())
 
-        model.eval()
-        for X, y, subject_idxs in tqdm(val_loader, desc="Validation"):
-            X, y = X.to(args.device), y.to(args.device)
-            
-            with torch.no_grad():
-                y_pred = model(X)
-            
-            val_loss.append(F.cross_entropy(y_pred, y).item())
-            val_acc.append(accuracy(y_pred, y).item())
+            model.eval()
+            for X, y, subject_idxs in tqdm(val_loader, desc="Validation"):
+                X, y = X.to(args.device), y.to(args.device)
+                
+                with torch.no_grad():
+                    y_pred = model(X)
+                
+                val_loss.append(F.cross_entropy(y_pred, y).item())
+                val_acc.append(accuracy(y_pred, y).item())
 
-        print(f"Epoch {epoch+1}/{args.epochs} | train loss: {np.mean(train_loss):.3f} | train acc: {np.mean(train_acc):.3f} | val loss: {np.mean(val_loss):.3f} | val acc: {np.mean(val_acc):.3f}")
-        torch.save(model.state_dict(), os.path.join(logdir, "model_last.pt"))
-        if args.use_wandb:
-            wandb.log({"train_loss": np.mean(train_loss), "train_acc": np.mean(train_acc), "val_loss": np.mean(val_loss), "val_acc": np.mean(val_acc)})
+            print(f"Epoch {epoch+1}/{args.epochs} | train loss: {np.mean(train_loss):.3f} | train acc: {np.mean(train_acc):.3f} | val loss: {np.mean(val_loss):.3f} | val acc: {np.mean(val_acc):.3f}")
         
-        if np.mean(val_acc) > max_val_acc:
-            cprint("New best.", "cyan")
-            torch.save(model.state_dict(), os.path.join(logdir, f"model_best_{fold}.pt"))
-            max_val_acc = np.mean(val_acc)
-            no_improve_epochs = 0
-        else:
-            no_improve_epochs += 1
-            if no_improve_epochs > args.early_stopping_rounds:
-                cprint("Early stopping.", "cyan")
-                break
+            if args.use_wandb:
+                wandb.log({"train_loss": np.mean(train_loss), "train_acc": np.mean(train_acc), "val_loss": np.mean(val_loss), "val_acc": np.mean(val_acc)})
+        
+            if np.mean(val_acc) > max_val_acc:
+                cprint("New best.", "cyan")
+                torch.save(model.state_dict(), os.path.join(logdir, f"model_best_{fold}.pt"))
+                max_val_acc = np.mean(val_acc)
+                no_improve_epochs = 0
+            else:
+                no_improve_epochs += 1
+                if no_improve_epochs > args.early_stopping_rounds:
+                    cprint("Early stopping.", "cyan")
+                    break
 
     
     # ----------------------------------
