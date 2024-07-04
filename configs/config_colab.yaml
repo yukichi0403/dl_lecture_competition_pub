@@ -1,8 +1,9 @@
 batch_size: 64
-epochs: 20
+epochs:1
 lr: 1e-3
 num_splits: 5
 early_stopping_rounds: 10
+num_classes: 1854
 
 expname: Effnet0b
 ver: 1

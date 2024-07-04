@@ -17,6 +17,7 @@ from torch.utils.data import DataLoader, ConcatDataset, Subset
 from sklearn.model_selection import StratifiedKFold
 from torch.optim.lr_scheduler import OneCycleLR, CosineAnnealingLR, ReduceLROnPlateau, StepLR, CosineAnnealingWarmRestarts
 import shutil
+import gc
 
 
 def get_LR_scheduler(optimizer, config):
@@ -35,6 +36,12 @@ def get_LR_scheduler(optimizer, config):
     else:
         raise ValueError(f"Invalid LR scheduler: {config.LR_scheduler}")
 
+def get_labels(dataset):
+    labels = []
+    for i in range(len(dataset)):
+        _, label, _ = dataset[i]
+        labels.append(label)
+    return np.array(labels)
 
 @hydra.main(version_base=None, config_path="configs", config_name="config_colab")
 def run(args: DictConfig):
@@ -56,16 +63,18 @@ def run(args: DictConfig):
     valid_set = ThingsMEGDataset("val", args.data_dir)
     # TrainとValidを結合
     combined_dataset = ConcatDataset([train_set, valid_set])
-    X = []; y = []
-    for data in combined_dataset:
-        X.append(data[0])
-        y.append(data[1])
-    X = torch.stack(X)
-    y = np.array(y)
+
+    # メモリを解放する
+    del train_set
+    del valid_set
+    gc.collect()
+
+    # メモリ使用量を減らすためにデータセット全体をメモリにロードしない
+    y = get_labels(combined_dataset)
     
     skf = StratifiedKFold(n_splits=args.num_splits, shuffle=True, random_state=args.seed)
         
-    for fold, (train_index, val_index) in enumerate(skf.split(X, y)):
+    for fold, (train_index, val_index) in enumerate(skf.split(np.zeros(len(y)), y)):
         print(f"Now training for fold {fold+1}/{args.num_splits}. Val label unique num: {len(set(y[val_index]))}")
         # トレーニングとテストのデータセットを作成
         train_subsampler = Subset(combined_dataset, train_index)
@@ -79,7 +88,8 @@ def run(args: DictConfig):
         #       Model
         # ------------------
         model = CustomModel(
-            args.backbone ,train_set.num_classes
+            args.backbone,
+            args.num_classes
         ).to(args.device)
 
         # ------------------
@@ -98,7 +108,7 @@ def run(args: DictConfig):
         max_val_acc = 0
         no_improve_epochs = 0
         accuracy = Accuracy(
-            task="multiclass", num_classes=train_set.num_classes, top_k=10
+            task="multiclass", num_classes=args.num_classes, top_k=10
         ).to(args.device)
       
         for epoch in range(args.epochs):
@@ -164,7 +174,8 @@ def run(args: DictConfig):
     folds_preds = []
     for fold in range(args.num_splits):
         model = CustomModel(
-            args.backbone ,train_set.num_classes
+            args.backbone,
+            args.num_classes
         ).to(args.device)
         model.load_state_dict(torch.load(os.path.join(logdir, f"model_best_{fold}.pt"), map_location=args.device))
         preds = [] 
