@@ -43,7 +43,7 @@ def get_labels(dataset):
         labels.append(label)
     return np.array(labels)
 
-@hydra.main(version_base=None, config_path="configs", config_name="config_colab")
+@hydra.main(version_base=None, config_path="configs", config_name="config_subjectidxfold")
 def run(args: DictConfig):
     print("Config loaded: ", args)  # 読み込まれた設定の内容を表示
     set_seed(args.seed)
