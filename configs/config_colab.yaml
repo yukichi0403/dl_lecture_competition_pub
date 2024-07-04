@@ -1,29 +1,23 @@
-batch_size: 64
-epochs: 10
-lr: 1e-3
-num_splits: 5
-early_stopping_rounds: 5
-num_classes: 1854
-
-expname: Effnet0b
-ver: 1
-
-backbone: efficientnet_b0
-
 LR_scheduler: OneCycleLR
 LR_scheduler_params:
-  max_lr: 1e-2
-  steps_per_epoch: 1027
   epochs: 10
+  max_lr: 1e-2
   pct_start: 0.3
-
-device: cuda:0
+  steps_per_epoch: 1027
+backbone: efficientnet_b0
+batch_size: 64
+data_dir: "/content/drive/MyDrive/DL\u57FA\u790E\u8B1B\u5EA7/\u6700\u7D42\u8AB2\u984C\
+  /data"
+device: cuda
+early_stopping_rounds: 5
+epochs: 10
+expname: Effnet0b
+lr: 1e-3
+model_path: null
+model_save_dir: null
+num_classes: 1854
+num_splits: 5
 num_workers: 4
 seed: 1234
-use_wandb: False
-
-data_dir: '/content/drive/MyDrive/DL基礎講座/最終課題/data' #data
-model_save_dir: 
-
-# Evaluation
-model_path: 
+use_wandb: false
+ver: 1
