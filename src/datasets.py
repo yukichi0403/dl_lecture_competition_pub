@@ -28,21 +28,21 @@ class ThingsMEGDataset(torch.utils.data.Dataset):
         return len(self.X)
 
     def __getitem__(self, i):
-        X = self._standarize(self.X[i])
+        X = self.__standardize(self.X[i])
         if self.resampling_rate:
-            X = self._resample(X[i], self.resampling_rate)
+            X = self.__resample(X, self.resampling_rate)
         if self.augs:
-            X = self._augment(X, self.augs)
+            X = self.__augment(X, self.augs)
         if hasattr(self, "y"):
             return X, self.y[i], self.subject_idxs[i]
         else:
             return X, self.subject_idxs[i]
         
-    def _standarize(self, img):
+    def __standardize(self, img):
         # Log transformation
         #img = np.clip(img,np.exp(-4),np.exp(8))
         #img = np.log(img)
-        
+
         # Standarize per image
         ep = 1e-6
         m = np.nanmean(img.flatten())
@@ -52,17 +52,17 @@ class ThingsMEGDataset(torch.utils.data.Dataset):
 
         return img
     
-    def _resample(self, img, new_freq):
+    def __resample(self, img, new_freq):
         num_samples = int(img.shape[-1] * new_freq / 200)  # 元のサンプリングレートは200Hz
         resampled_data = resample(img.numpy(), num_samples, axis=-1)
         return torch.tensor(resampled_data)
     
-    def _random_transform(self, img, transform):
+    def __random_transform(self, img, transform):
         return transform(image=img)['image']
 
-    def _augment(self, img_batch, transform):
+    def __augment(self, img_batch, transform):
         for i in range(img_batch.shape[0]):
-              img_batch[i,] = self._random_transform(img_batch[i,],  transform)
+              img_batch[i,] = self.__random_transform(img_batch[i,],  transform)
         return img_batch
         
     @property

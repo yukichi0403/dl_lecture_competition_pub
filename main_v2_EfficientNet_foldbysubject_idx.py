@@ -43,7 +43,7 @@ def get_labels(dataset):
         labels.append(label)
     return np.array(labels)
 
-@hydra.main(version_base=None, config_path="configs", config_name="config_subjectidxfold")
+@hydra.main(version_base=None, config_path="configs", config_name="config_colab")
 def run(args: DictConfig):
     print("Config loaded: ", args)  # 読み込まれた設定の内容を表示
     set_seed(args.seed)
@@ -51,6 +51,9 @@ def run(args: DictConfig):
     
     if args.use_wandb:
         wandb.init(mode="online", dir=logdir, project="MEG-classification")
+
+    subject_idxs_train = torch.load(os.path.join(args.data_dir, "train_subject_idxs.pt"))
+    subject_idxs_val = torch.load(os.path.join(args.data_dir, "val_subject_idxs.pt"))
 
     # ------------------
     #    Dataloader
@@ -60,36 +63,29 @@ def run(args: DictConfig):
     # 例として、TrainとValidのデータセットを読み込み
     print(f"Now Loading Train/Valid Datasets")
     train_set = ThingsMEGDataset("train", args.data_dir)
-    valid_set = ThingsMEGDataset("val", args.data_dir)
-    # TrainとValidを結合
-    combined_dataset = ConcatDataset([train_set, valid_set])
+    val_set = ThingsMEGDataset("val", args.data_dir)
+    train_loader = torch.utils.data.DataLoader(train_set, shuffle=True, **loader_args)
+    val_loader = torch.utils.data.DataLoader(val_set, shuffle=False, **loader_args)
 
-    # メモリを解放する
-    del train_set
-    del valid_set
-    gc.collect()
-
-    # メモリ使用量を減らすためにデータセット全体をメモリにロードしない
-    labels = get_labels(combined_dataset)
+    # Subject idxごとにデータを分割
+    unique_subjects = np.unique(subject_idxs_train.numpy())
     
-    skf = StratifiedKFold(n_splits=args.num_splits, shuffle=True, random_state=args.seed)
+    for subject in unique_subjects:
+        train_indices = (subject_idxs_train == subject).nonzero(as_tuple=True)[0]
+        val_indices = (subject_idxs_val == subject).nonzero(as_tuple=True)[0]
+        print(f"Train shape: {len(train_indices)}, Val shape: {len(val_indices)}. Subject idx: {subject}")
+
+        train_subset = Subset(train_set, train_indices)
+        val_subset = Subset(val_set, val_indices)
         
-    for fold, (train_index, val_index) in enumerate(skf.split(np.zeros(len(labels)), labels)):
-        print(f"Now training for fold {fold+1}/{args.num_splits}. Val label unique num: {len(set(labels[val_index]))}")
-        # トレーニングとテストのデータセットを作成
-        train_subsampler = Subset(combined_dataset, train_index)
-        val_subsampler = Subset(combined_dataset, val_index)
-        
-        train_loader = DataLoader(train_subsampler,  shuffle=True, **loader_args)
-        val_loader = DataLoader(val_subsampler,  shuffle=False, **loader_args)
-        
+        train_loader = DataLoader(train_subset, shuffle=True, **loader_args)
+        val_loader = DataLoader(val_subset, shuffle=False, **loader_args)
 
         # ------------------
         #       Model
         # ------------------
         model = CustomModel(
-            args.backbone,
-            args.num_classes
+            args.backbone, args.num_classes
         ).to(args.device)
 
         # ------------------
