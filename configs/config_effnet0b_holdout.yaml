@@ -16,7 +16,7 @@ LR_scheduler_params:
   num_warmup_steps: 100
   num_training_steps: 1027
 
-device: cuda:0
+device: cpu #cuda:0
 num_workers: 4
 seed: 1234
 use_wandb: False

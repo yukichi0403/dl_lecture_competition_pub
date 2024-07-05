@@ -109,7 +109,7 @@ def run(args: DictConfig):
             
             loss = F.cross_entropy(y_pred, y)
             if args.aux_loss_ratio is not None:
-                aux_loss = F.cross_entropy(y_pred_aux, y)
+                aux_loss = F.cross_entropy(y_pred_aux, subject_idxs)
                 total_loss = loss + args.aux_loss_ratio * aux_loss
             else:
                 total_loss = loss
@@ -127,8 +127,8 @@ def run(args: DictConfig):
             train_acc.append(acc.item())
 
         model.eval()
-        for X, y, subject_idxs in tqdm(val_loader, desc="Validation"):
-            X, y, subject_idxs = X.to(args.device), y.to(args.device), subject_idxs.to(args.device)
+        for X, y, _ in tqdm(val_loader, desc="Validation"):
+            X, y = X.to(args.device), y.to(args.device)
             
             with torch.no_grad():
                 if args.aux_loss_ratio is not None:
