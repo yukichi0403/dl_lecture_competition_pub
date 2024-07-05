@@ -114,7 +114,7 @@ def run(args: DictConfig):
             else:
                 total_loss = loss
             
-            train_loss.append(total_loss.item())
+            train_loss.append(loss.item())
             
             optimizer.zero_grad()
             loss.backward()
@@ -136,13 +136,9 @@ def run(args: DictConfig):
                 else:
                     y_pred = model(X)
             
-            if args.aux_loss_ratio is not None:
-                total_val_loss = F.cross_entropy(y_pred, y) + args.aux_loss_ratio * F.cross_entropy(y_pred_aux, y)
-                val_loss.append(total_val_loss.item())
-            else:
-                total_val_loss = F.cross_entropy(y_pred, y)
-                val_loss.append(total_val_loss.item())
-            
+                loss = F.cross_entropy(y_pred, y)
+              
+            val_loss.append(loss.item())
             val_acc.append(accuracy(y_pred, y).item())
 
         print(f"Epoch {epoch+1}/{args.epochs} | train loss: {np.mean(train_loss):.3f} | train acc: {np.mean(train_acc):.3f} | val loss: {np.mean(val_loss):.3f} | val acc: {np.mean(val_acc):.3f}")
