@@ -74,7 +74,7 @@ def run(args: DictConfig):
     #       Model
     # ------------------
     model = CustomModel(
-        args.backbone, args.num_classes, args.aux_loss_ratio
+        args.backbone, args.num_classes, True, args.aux_loss_ratio
     ).to(args.device)
 
     # ------------------
@@ -177,6 +177,7 @@ def run(args: DictConfig):
     model = CustomModel(
         args.backbone,
         args.num_classes,
+        True,
         args.aux_loss_ratio
     ).to(args.device)
     model.load_state_dict(torch.load(os.path.join(logdir, f"model_best.pt"), map_location=args.device))

@@ -36,9 +36,9 @@ class CustomModel(nn.Module):
         
         if self.aux_loss_ratio is not None:
             out_aux = self.decoder_aux(out.view(out.size(0), -1))
-            return out, out_aux
+            return main_out, out_aux
         else:
-            return out
+            return main_out
 
 
 class BasicConvClassifier(nn.Module):
