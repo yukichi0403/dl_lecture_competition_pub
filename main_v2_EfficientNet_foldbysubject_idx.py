@@ -148,7 +148,7 @@ def run(args: DictConfig):
         
             if np.mean(val_acc) > max_val_acc:
                 cprint("New best.", "cyan")
-                torch.save(model.state_dict(), os.path.join(logdir, f"model_best_{fold}.pt"))
+                torch.save(model.state_dict(), os.path.join(logdir, f"model_best_{subject}.pt"))
                 max_val_acc = np.mean(val_acc)
                 no_improve_epochs = 0
             else:
@@ -165,12 +165,15 @@ def run(args: DictConfig):
     test_set = ThingsMEGDataset("test", args.data_dir)
     subject_idxs_test = torch.load(os.path.join(args.data_dir, "test_subject_idxs.pt"))
     
-    preds = np.zeros(len(test_set))
+    preds = np.zeros((len(test_set), args.num_classes))
     for subject in unique_subjects:
-        print(f"Subject {subject}")
         test_indices = (subject_idxs_test == subject).nonzero(as_tuple=True)[0]
+        print(f"Subject {subject}. Test size: {len(test_indices)}")
+        
         test_subset = Subset(test_set, test_indices)
-        test_loader = DataLoader(test_subset, shuffle=False, **loader_args)
+        test_loader = DataLoader(
+            test_subset, shuffle=False, batch_size=args.batch_size, num_workers=args.num_workers
+        )
 
         model = CustomModel(
             args.backbone,
@@ -184,7 +187,7 @@ def run(args: DictConfig):
             subject_preds.append(model(X.to(args.device)).detach().cpu())
         
         subject_preds = torch.cat(subject_preds, dim=0).numpy()
-        preds[test_indices] = subject_preds
+        preds[test_indices, :] = subject_preds
 
     np.save(os.path.join(logdir, "submission.npy"), preds)
     cprint(f"Submission {preds.shape} saved at {logdir}", "cyan")

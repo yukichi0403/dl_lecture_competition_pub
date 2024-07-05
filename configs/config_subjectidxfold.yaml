@@ -1,6 +1,6 @@
 batch_size: 64
-epochs: 15
-lr: 1e-3
+epochs: 1
+lr: 3e-3
 num_splits: 5
 early_stopping_rounds: 3
 num_classes: 1854
@@ -13,8 +13,8 @@ backbone: efficientnet_b0
 LR_scheduler: OneCycleLR
 LR_scheduler_params:
   max_lr: 1e-2
-  steps_per_epoch: 1027
-  epochs: 15
+  steps_per_epoch: 257
+  epochs: 1
   pct_start: 0.3
 
 device: cuda:0
