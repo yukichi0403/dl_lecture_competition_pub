@@ -6,7 +6,7 @@ import timm
 
 
 class CustomModel(nn.Module):
-    def __init__(self, model_name, num_classes: int = 1854, pretrained: bool = True):
+    def __init__(self, model_name, num_classes: int = 1854, pretrained: bool = True, aux_loss_ratio: float = None):
         super(CustomModel, self).__init__()
         self.encoder = timm.create_model(model_name, pretrained=pretrained)
         self.features = nn.Sequential(*list(self.encoder.children())[:-2])
@@ -15,6 +15,11 @@ class CustomModel(nn.Module):
             nn.Flatten(),
             nn.Linear(self.encoder.num_features, num_classes)
         )
+        if aux_loss_ratio is not None:
+            self.decoder_aux = nn.Sequential(
+                nn.Flatten(),
+                nn.Linear(self.encoder.num_features, 4)
+                )
         
     def expand_dims(self, images):
         # Expand dims to [B, H, W, 3]
@@ -27,8 +32,12 @@ class CustomModel(nn.Module):
         out = self.features(images)
         out = self.GAP(out)
         out = self.decoder(out.view(out.size(0), -1))
-
-        return out
+        
+        if self.decoder_aux is not None:
+            out_aux = self.decoder_aux(out.view(out.size(0), -1))
+            return out, out_aux
+        else:
+            return out
 
 
 class BasicConvClassifier(nn.Module):
