@@ -18,6 +18,7 @@ from sklearn.model_selection import StratifiedKFold
 from torch.optim.lr_scheduler import OneCycleLR, CosineAnnealingLR, ReduceLROnPlateau, StepLR, CosineAnnealingWarmRestarts
 from torch.optim import AdamW
 from transformers import get_cosine_schedule_with_warmup
+import albumentations as A
 
 import shutil
 import gc
@@ -61,10 +62,12 @@ def run(args: DictConfig):
     #    Dataloader
     # ------------------
     loader_args = {"batch_size": args.batch_size, "num_workers": args.num_workers}
+    #augmentation
+    transforms = None
 
     # 例として、TrainとValidのデータセットを読み込み
     print(f"Now Loading Train/Valid Datasets")
-    train_set = ThingsMEGDataset("train", args.data_dir)
+    train_set = ThingsMEGDataset("train", args.data_dir, transforms)
     val_set = ThingsMEGDataset("val", args.data_dir)
     train_loader = torch.utils.data.DataLoader(train_set, shuffle=True, **loader_args)
     val_loader = torch.utils.data.DataLoader(val_set, shuffle=False, **loader_args)
@@ -196,6 +199,11 @@ def run(args: DictConfig):
     # Google Driveにファイルをコピー
     drive_dir = os.path.join(args.data_dir, f"{args.expname}_{args.ver}")
     os.makedirs(drive_dir, exist_ok=True)
+
+    model_path = os.path.join(logdir, f"model_best.pt")
+    if os.path.exists(model_path):
+        shutil.copy(model_path, drive_dir)
+        print(f'Model file saved to Google Drive: {drive_dir}')
 
     submission_path = os.path.join(logdir, "submission.npy")
     if os.path.exists(submission_path):

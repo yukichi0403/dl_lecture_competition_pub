@@ -1,5 +1,5 @@
 batch_size: 64
-epochs: 1
+epochs: 15
 lr: 1e-3
 early_stopping_rounds: 3
 num_classes: 1854
@@ -14,9 +14,9 @@ backbone: tf_efficientnet_b0.ns_jft_in1k
 LR_scheduler: CosineAnnealingWarmRestarts
 LR_scheduler_params:
   num_warmup_steps: 100
-  num_training_steps: 1027
+  num_training_steps: 15405
 
-device: cpu #cuda:0
+device: cuda:0
 num_workers: 4
 seed: 1234
 use_wandb: False
