@@ -8,6 +8,7 @@ import timm
 class CustomModel(nn.Module):
     def __init__(self, model_name, num_classes: int = 1854, pretrained: bool = True, aux_loss_ratio: float = None):
         super(CustomModel, self).__init__()
+        self.aux_loss_ratio = aux_loss_ratio
         self.encoder = timm.create_model(model_name, pretrained=pretrained)
         self.features = nn.Sequential(*list(self.encoder.children())[:-2])
         self.GAP = nn.AdaptiveAvgPool2d(1)
@@ -31,9 +32,9 @@ class CustomModel(nn.Module):
         images = self.expand_dims(images)
         out = self.features(images)
         out = self.GAP(out)
-        out = self.decoder(out.view(out.size(0), -1))
+        main_out = self.decoder(out.view(out.size(0), -1))
         
-        if self.decoder_aux is not None:
+        if self.aux_loss_ratio is not None:
             out_aux = self.decoder_aux(out.view(out.size(0), -1))
             return out, out_aux
         else:

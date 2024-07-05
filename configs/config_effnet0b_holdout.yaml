@@ -1,5 +1,5 @@
 batch_size: 64
-epochs: 15
+epochs: 1
 lr: 1e-3
 early_stopping_rounds: 3
 num_classes: 1854

@@ -51,15 +51,11 @@ def run(args: DictConfig):
     print("Config loaded: ", args)  # 読み込まれた設定の内容を表示
     set_seed(args.seed)
     logdir = hydra.core.hydra_config.HydraConfig.get().runtime.output_dir
+
+    loader_args = {"batch_size": args.batch_size, "num_workers": args.num_workers}
     
     if args.use_wandb:
         wandb.init(mode="online", dir=logdir, project="MEG-classification")
-
-    print("Now Loading Train/Val Datasets")
-    train_set = ThingsMEGDataset("train", args.data_dir)
-    train_loader = torch.utils.data.DataLoader(train_set, shuffle=True, **loader_args)
-    val_set = ThingsMEGDataset("val", args.data_dir)
-    val_loader = torch.utils.data.DataLoader(val_set, shuffle=False, **loader_args)
 
     # ------------------
     #    Dataloader
@@ -72,9 +68,7 @@ def run(args: DictConfig):
     val_set = ThingsMEGDataset("val", args.data_dir)
     train_loader = torch.utils.data.DataLoader(train_set, shuffle=True, **loader_args)
     val_loader = torch.utils.data.DataLoader(val_set, shuffle=False, **loader_args)
-
-    
-    print(f"Train shape: {len(train_set)}, Val shape: {len(val_set)}. Subject idx: {subject}")
+    print(f"Train shape: {len(train_set)}, Val shape: {len(val_set)}.")
     
     # ------------------
     #       Model
@@ -158,7 +152,7 @@ def run(args: DictConfig):
     
         if np.mean(val_acc) > max_val_acc:
             cprint("New best.", "cyan")
-            torch.save(model.state_dict(), os.path.join(logdir, f"model_best_{subject}.pt"))
+            torch.save(model.state_dict(), os.path.join(logdir, f"model_best.pt"))
             max_val_acc = np.mean(val_acc)
             no_improve_epochs = 0
         else:
@@ -189,7 +183,6 @@ def run(args: DictConfig):
     
     preds = []
     model.eval()
-    subject_preds = [] 
     for X, subject_idxs in tqdm(test_loader, desc="Validation"):        
         with torch.no_grad():
             if args.aux_loss_ratio is not None:
