@@ -32,7 +32,7 @@ class ThingsMEGDataset(torch.utils.data.Dataset):
         if self.resampling_rate:
             X = self.__resample(X, self.resampling_rate)
         if self.augs:
-            X = self.__augment(X, self.augs)
+            X = self.__random_transform(X, self.augs)
         if hasattr(self, "y"):
             return X, self.y[i], self.subject_idxs[i]
         else:
@@ -56,14 +56,13 @@ class ThingsMEGDataset(torch.utils.data.Dataset):
         num_samples = int(img.shape[-1] * new_freq / 200)  # 元のサンプリングレートは200Hz
         resampled_data = resample(img.numpy(), num_samples, axis=-1)
         return torch.tensor(resampled_data)
-    
-    def __random_transform(self, img, transform):
-        return transform(image=img)['image']
 
-    def __augment(self, img_batch, transform):
-        for i in range(img_batch.shape[0]):
-              img_batch[i,] = self.__random_transform(img_batch[i,],  transform)
-        return img_batch
+
+    def __random_transform(self, img, transform):
+        img = img[np.newaxis, :, :]  # Add a dummy channel dimension
+        img = transform(image=img)['image']
+        img = img[0, :, :]  # Remove the dummy channel dimension
+        return torch.tensor(img)
         
     @property
     def num_channels(self) -> int:
