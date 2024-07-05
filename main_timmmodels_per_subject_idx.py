@@ -148,7 +148,7 @@ def run(args: DictConfig):
         
             if np.mean(val_acc) > max_val_acc:
                 cprint("New best.", "cyan")
-                torch.save(model.state_dict(), os.path.join(logdir, f"model_best_{fold}.pt"))
+                torch.save(model.state_dict(), os.path.join(logdir, f"model_best_{subject}.pt"))
                 max_val_acc = np.mean(val_acc)
                 no_improve_epochs = 0
             else:
