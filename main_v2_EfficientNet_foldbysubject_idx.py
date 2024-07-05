@@ -179,7 +179,7 @@ def run(args: DictConfig):
             args.backbone,
             args.num_classes
         ).to(args.device)
-        model.load_state_dict(torch.load(os.path.join(args.model_path, f"model_best_{subject}.pt"), map_location=args.device))
+        model.load_state_dict(torch.load(os.path.join(logdir, f"model_best_{subject}.pt"), map_location=args.device))
         
         model.eval()
         subject_preds = [] 

@@ -14,7 +14,7 @@ LR_scheduler: OneCycleLR
 LR_scheduler_params:
   max_lr: 1e-2
   steps_per_epoch: 257
-  epochs: 1
+  epochs: 15
   pct_start: 0.3
 
 device: cuda:0
