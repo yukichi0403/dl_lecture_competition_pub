@@ -65,14 +65,16 @@ def run(args: DictConfig):
     #augmentation
     params = {
     "num_masks_x": 1,  # 時間軸方向のマスク数
-    "mask_x_length": [10, 30],  # 時間軸方向のマスク長さ
-    "num_masks_y": 1,  # channel方向のマスク数
-    "mask_y_length": 10,  # channel方向のマスク長さ
+    "mask_x_length": [10, 20],  # 時間軸方向のマスク長さ
+    # "num_masks_y": 1,  # channel方向のマスク数
+    # "mask_y_length": 10,  # channel方向のマスク長さ
     "fill_value": 0,  # マスク領域の値
     }
     transforms = A.Compose([
-                              #A.XYMasking(**params, p=0.5),
-                              A.HorizontalFlip(p=0.5)]
+                              #A.XYMasking(**params, p=0.3),
+                              #A.HorizontalFlip(p=0.3),
+                              A.VerticalFlip(p=0.3)
+                              ]
      ) #None
 
     # 例として、TrainとValidのデータセットを読み込み
