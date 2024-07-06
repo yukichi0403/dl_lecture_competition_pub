@@ -9,17 +9,17 @@ from termcolor import cprint
 class ThingsMEGDataset(torch.utils.data.Dataset):
     def __init__(self, split: str, data_dir: str = "data", augs = None, resampling_rate = None) -> None:
         super().__init__()
-        
+
         assert split in ["train", "val", "test"], f"Invalid split: {split}"
         self.split = split
         self.num_classes = 1854
-        
+
         self.X = torch.load(os.path.join(data_dir, f"{split}_X.pt"))
         self.subject_idxs = torch.load(os.path.join(data_dir, f"{split}_subject_idxs.pt"))
 
         self.augs = augs
         self.resampling_rate = resampling_rate
-        
+
         if split in ["train", "val"]:
             self.y = torch.load(os.path.join(data_dir, f"{split}_y.pt"))
             assert len(torch.unique(self.y)) == self.num_classes, "Number of classes do not match."
@@ -37,12 +37,8 @@ class ThingsMEGDataset(torch.utils.data.Dataset):
             return X, self.y[i], self.subject_idxs[i]
         else:
             return X, self.subject_idxs[i]
-        
-    def __standardize(self, img):
-        # Log transformation
-        #img = np.clip(img,np.exp(-4),np.exp(8))
-        #img = np.log(img)
 
+    def __standardize(self, img):
         # Standarize per image
         ep = 1e-6
         m = np.nanmean(img.flatten())
@@ -51,7 +47,7 @@ class ThingsMEGDataset(torch.utils.data.Dataset):
         img = np.nan_to_num(img, nan=0.0)
 
         return img
-    
+
     def __resample(self, img, new_freq):
         num_samples = int(img.shape[-1] * new_freq / 200)  # 元のサンプリングレートは200Hz
         resampled_data = resample(img.numpy(), num_samples, axis=-1)
@@ -59,15 +55,13 @@ class ThingsMEGDataset(torch.utils.data.Dataset):
 
 
     def __random_transform(self, img, transform):
-        img = img[np.newaxis, :, :]  # Add a dummy channel dimension
         img = transform(image=img)['image']
-        img = img[0, :, :]  # Remove the dummy channel dimension
         return torch.tensor(img)
-        
+
     @property
     def num_channels(self) -> int:
         return self.X.shape[1]
-    
+
     @property
     def seq_len(self) -> int:
         return self.X.shape[2]

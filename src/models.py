@@ -24,8 +24,7 @@ class CustomModel(nn.Module):
         
     def expand_dims(self, images):
         # Expand dims to [B, H, W, 3]
-        images = images.unsqueeze(3).expand(-1, -1, -1, 3)
-        images = images.permute(0, 3, 1, 2)
+        images = images.unsqueeze(1).expand(-1, 3, -1, -1)
         return images
 
     def forward(self, images):
