@@ -38,7 +38,8 @@ def run(args: DictConfig):
         args.backbone,
         args.num_classes,
         True,
-        args.aux_loss_ratio
+        args.aux_loss_ratio,
+        args.dropout_rate
     ).to(args.device)
     model.load_state_dict(torch.load(os.path.join(savedir, f"model_best.pt"), map_location=args.device))
     

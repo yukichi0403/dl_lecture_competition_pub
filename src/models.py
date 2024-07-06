@@ -6,7 +6,7 @@ import timm
 
 
 class CustomModel(nn.Module):
-    def __init__(self, model_name, num_classes: int = 1854, pretrained: bool = True, aux_loss_ratio: float = None):
+    def __init__(self, model_name, num_classes: int = 1854, pretrained: bool = True, aux_loss_ratio: float = None, dropout_rate: float = 0):
         super(CustomModel, self).__init__()
         self.aux_loss_ratio = aux_loss_ratio
         self.encoder = timm.create_model(model_name, pretrained=pretrained)
@@ -14,11 +14,13 @@ class CustomModel(nn.Module):
         self.GAP = nn.AdaptiveAvgPool2d(1)
         self.decoder = nn.Sequential(
             nn.Flatten(),
+            nn.Dropout(dropout_rate),
             nn.Linear(self.encoder.num_features, num_classes)
         )
         if aux_loss_ratio is not None:
             self.decoder_aux = nn.Sequential(
                 nn.Flatten(),
+                nn.Dropout(dropout_rate),
                 nn.Linear(self.encoder.num_features, 4)
                 )
         

@@ -5,8 +5,9 @@ early_stopping_rounds: 3
 num_classes: 1854
 
 aux_loss_ratio: 0.6 
+dropout_rate: 0.1
 
-expname: Effnet0b_holdout_aux_HorizontalFlip
+expname: Effnet0b_holdout_aux_dropout
 ver: 1
 
 backbone: tf_efficientnet_b0.ns_jft_in1k
