@@ -62,24 +62,13 @@ def run(args: DictConfig):
     #    Dataloader
     # ------------------
     loader_args = {"batch_size": args.batch_size, "num_workers": args.num_workers}
-    #augmentation
-    params = {
-    "num_masks_x": 1,  # 時間軸方向のマスク数
-    "mask_x_length": [10, 20],  # 時間軸方向のマスク長さ
-    # "num_masks_y": 1,  # channel方向のマスク数
-    # "mask_y_length": 10,  # channel方向のマスク長さ
-    "fill_value": 0,  # マスク領域の値
-    }
-    transforms = A.Compose([
-                              #A.XYMasking(**params, p=0.3),
-                              #A.HorizontalFlip(p=0.3),
-                              A.VerticalFlip(p=0.3)
-                              ]
-     ) #None
+    print("No augmentation")
 
     # 例として、TrainとValidのデータセットを読み込み
     print(f"Now Loading Train/Valid Datasets")
-    train_set = ThingsMEGDataset("train", args.data_dir, transforms)
+    train_set = ThingsMEGDataset("train", args.data_dir, 
+                #transforms
+                )
     val_set = ThingsMEGDataset("val", args.data_dir)
     train_loader = torch.utils.data.DataLoader(train_set, shuffle=True, **loader_args)
     val_loader = torch.utils.data.DataLoader(val_set, shuffle=False, **loader_args)
