@@ -64,11 +64,16 @@ def run(args: DictConfig):
     loader_args = {"batch_size": args.batch_size, "num_workers": args.num_workers}
     #augmentation
     params = {
-    "num_masks_x": 1,  # チャネル方向のマスク数
-    "mask_x_length": 10,  # チャネル方向のマスク長さ
+    "num_masks_x": 1,  # 時間軸方向のマスク数
+    "mask_x_length": [10, 30],  # 時間軸方向のマスク長さ
+    "num_masks_y": 1,  # channel方向のマスク数
+    "mask_y_length": 10,  # channel方向のマスク長さ
     "fill_value": 0,  # マスク領域の値
     }
-    transforms = A.Compose([A.XYMasking(**params, p=0.3)]) #None
+    transforms = A.Compose([
+                              #A.XYMasking(**params, p=0.5),
+                              A.HorizontalFlip(p=0.5)]
+     ) #None
 
     # 例として、TrainとValidのデータセットを読み込み
     print(f"Now Loading Train/Valid Datasets")
