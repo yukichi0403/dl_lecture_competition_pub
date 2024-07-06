@@ -10,7 +10,7 @@ dropout_rate: 0.05
 expname: Effnet2b_holdout_aux_dropout
 ver: 1
 
-backbone: tf_efficientnet_b2.ns_jft_in1k
+backbone: convnext_base.fb_in22k_ft_in1k
 
 LR_scheduler: CosineAnnealingWarmRestarts
 LR_scheduler_params:
