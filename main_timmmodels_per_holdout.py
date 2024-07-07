@@ -47,7 +47,7 @@ def get_labels(dataset):
         labels.append(label)
     return np.array(labels)
 
-@hydra.main(version_base=None, config_path="configs", config_name="config_effnet0b_holdout")
+@hydra.main(version_base=None, config_path="configs", config_name="config_convnext_holdout")
 def run(args: DictConfig):
     print("Config loaded: ", args)  # 読み込まれた設定の内容を表示
     set_seed(args.seed)
@@ -77,13 +77,14 @@ def run(args: DictConfig):
     # ------------------
     #       Model
     # ------------------
-    model = CustomModel(
+    model = CustomConvNextModel(
         args.backbone, 
         args.num_classes, 
         True, 
         args.aux_loss_ratio, 
         args.dropout_rate
     ).to(args.device)
+    print(model)
 
     # ------------------
     #     Optimizer
@@ -178,7 +179,7 @@ def run(args: DictConfig):
         test_set, shuffle=False, batch_size=args.batch_size, num_workers=args.num_workers
     )
 
-    model = CustomModel(
+    model = CustomConvNextModel(
         args.backbone,
         args.num_classes,
         True,

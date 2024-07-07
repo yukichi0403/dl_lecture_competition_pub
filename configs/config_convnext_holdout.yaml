@@ -1,6 +1,6 @@
 batch_size: 32
 epochs: 10
-lr: 1e-4
+lr: 2e-4
 early_stopping_rounds: 3
 num_classes: 1854
 
@@ -10,7 +10,7 @@ dropout_rate: 0.05
 expname: Convnext_holdout_aux_dropout
 ver: 1
 
-backbone: timm/convnext_base.fb_in22k_ft_in1k
+backbone: convnext_small.in12k_ft_in1k
 
 LR_scheduler: CosineAnnealingWarmRestarts
 LR_scheduler_params:
