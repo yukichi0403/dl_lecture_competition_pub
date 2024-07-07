@@ -3,11 +3,57 @@ import torch.nn as nn
 import torch.nn.functional as F
 from einops.layers.torch import Rearrange
 import timm
+from timm.layers import LayerNorm2d
 
 
-class CustomModel(nn.Module):
-    def __init__(self, model_name, num_classes: int = 1854, pretrained: bool = True, aux_loss_ratio: float = None, dropout_rate: float = 0):
-        super(CustomModel, self).__init__()
+class CustomConvNextModel(nn.Module):
+    def __init__(self, model_name, num_classes: int = 1854, pretrained: bool = True, 
+                 aux_loss_ratio: float = None, dropout_rate: float = 0):
+        super(CustomConvNextModel, self).__init__()
+        self.aux_loss_ratio = aux_loss_ratio
+        self.encoder = timm.create_model(model_name, pretrained=pretrained)
+        self.features = nn.Sequential(*list(self.encoder.children())[:-1])
+        self.GAP = nn.AdaptiveAvgPool2d(1)
+        self.norm_pre = nn.Identity()
+        self.layer_norm = LayerNorm2d(self.encoder.head_hidden_size)
+        self.decoder = nn.Sequential(
+            nn.Flatten(),
+            nn.Identity(),
+            nn.Dropout(dropout_rate),
+            nn.Linear(self.encoder.num_features, num_classes)
+        )
+        if aux_loss_ratio is not None:
+            self.decoder_aux = nn.Sequential(
+                nn.Flatten(),
+                nn.Identity(),
+                nn.Dropout(dropout_rate),
+                nn.Linear(self.encoder.num_features, 4)
+                )
+        
+    def expand_dims(self, images):
+        # Expand dims to [B, H, W, 3]
+        images = images.unsqueeze(1).expand(-1, 3, -1, -1)
+        return images
+
+    def forward(self, images):
+        images = self.expand_dims(images)
+        out = self.features(images)
+        out = self.GAP(out)
+        out = self.norm_pre(out)
+        out = self.layer_norm(out)
+        main_out = self.decoder(out.view(out.size(0), -1))
+        
+        if self.aux_loss_ratio is not None:
+            out_aux = self.decoder_aux(out.view(out.size(0), -1))
+            return main_out, out_aux
+        else:
+            return main_out
+
+
+class CustomEfficientNetModel(nn.Module):
+    def __init__(self, model_name, num_classes: int = 1854, pretrained: bool = True, 
+                  aux_loss_ratio: float = None, dropout_rate: float = 0):
+        super(CustomEfficientNetModel, self).__init__()
         self.aux_loss_ratio = aux_loss_ratio
         self.encoder = timm.create_model(model_name, pretrained=pretrained)
         self.features = nn.Sequential(*list(self.encoder.children())[:-2])
