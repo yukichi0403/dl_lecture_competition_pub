@@ -4,6 +4,42 @@ import torch.nn.functional as F
 from einops.layers.torch import Rearrange
 import timm
 from timm.layers import LayerNorm2d
+from timm.layers.adaptive_avgmax_pool import SelectAdaptivePool2d
+
+class CustomSwinTransformerModel(nn.Module):
+    def __init__(self, model_name, num_classes: int = 1854, pretrained: bool = True,
+                 aux_loss_ratio: float = None, dropout_rate: float = 0.05):
+        super(CustomSwinTransformerModel, self).__init__()
+        self.aux_loss_ratio = aux_loss_ratio
+        self.encoder = timm.create_model(model_name, pretrained=pretrained)
+        self.features = nn.Sequential(*list(self.encoder.children())[:-1])
+        self.GAP = SelectAdaptivePool2d(pool_type='avg', input_fmt='NHWC',flatten=True)
+        self.decoder = nn.Sequential(
+            nn.Dropout(dropout_rate),
+            nn.Linear(self.encoder.num_features, num_classes)
+        )
+        if aux_loss_ratio is not None:
+            self.decoder_aux = nn.Sequential(
+                nn.Dropout(dropout_rate),
+                nn.Linear(self.encoder.num_features, 4)
+            )
+
+    def expand_dims(self, images):
+        images = images.unsqueeze(1).expand(-1, 3, -1, -1)
+        return images
+
+    def forward(self, images):
+        images = self.expand_dims(images)
+        out = self.features(images)
+        out = self.GAP(out)
+        main_out = self.decoder(out)
+
+        if self.aux_loss_ratio is not None:
+            out_aux = self.decoder_aux(out)
+            return main_out, out_aux
+        else:
+            return main_out
+        
 
 
 class CustomConvNextModel(nn.Module):

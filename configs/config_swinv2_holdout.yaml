@@ -1,0 +1,28 @@
+batch_size: 64
+epochs: 10
+lr: 1e-4
+early_stopping_rounds: 3
+num_classes: 1854
+
+aux_loss_ratio: 0.6 
+dropout_rate: 0.05
+
+expname: swintransformer_tiny_holdout_aux_dropout
+ver: 1
+
+backbone: swinv2_tiny_window16_256
+
+LR_scheduler: CosineAnnealingWarmRestarts
+LR_scheduler_params:
+  num_warmup_steps: 1027
+  num_training_steps: 10270
+
+device: cuda:0
+num_workers: 4
+seed: 1234
+use_wandb: False
+
+data_dir: '/content/drive/MyDrive/DL基礎講座/最終課題/data' #data
+
+# Evaluation
+model_path: 
