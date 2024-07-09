@@ -19,6 +19,7 @@ from torch.optim.lr_scheduler import OneCycleLR, CosineAnnealingLR, ReduceLROnPl
 from torch.optim import AdamW
 from transformers import get_cosine_schedule_with_warmup
 import albumentations as A
+import cv2
 
 import shutil
 import gc
@@ -62,14 +63,17 @@ def run(args: DictConfig):
     #    Dataloader
     # ------------------
     loader_args = {"batch_size": args.batch_size, "num_workers": args.num_workers}
-    print("No augmentation")
+    # print("No augmentation")
+    transforms = A.Compose([A.Resize(256, 256, interpolation=cv2.INTER_AREA)])
 
     # 例として、TrainとValidのデータセットを読み込み
     print(f"Now Loading Train/Valid Datasets")
     train_set = ThingsMEGDataset("train", args.data_dir, 
-                #transforms
+                transforms
                 )
-    val_set = ThingsMEGDataset("val", args.data_dir)
+    val_set = ThingsMEGDataset("val", args.data_dir, 
+                               transforms
+                               )
     train_loader = torch.utils.data.DataLoader(train_set, shuffle=True, **loader_args)
     val_loader = torch.utils.data.DataLoader(val_set, shuffle=False, **loader_args)
     print(f"Train shape: {len(train_set)}, Val shape: {len(val_set)}.")
@@ -171,7 +175,9 @@ def run(args: DictConfig):
     #  Start evaluation with best model
     # ----------------------------------        
     print("Now Loading Test Datasets")
-    test_set = ThingsMEGDataset("test", args.data_dir)
+    test_set = ThingsMEGDataset("test", args.data_dir, 
+                                transforms
+                                )
     
     print(f"Test size: {len(test_set)}")
         
