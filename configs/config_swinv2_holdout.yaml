@@ -10,7 +10,7 @@ dropout_rate: 0.05
 expname: swintransformer_tiny_holdout_aux_dropout
 ver: 1
 
-backbone: swinv2_tiny_window16_256
+backbone: swinv2_tiny_window8_256.ms_in1k
 
 LR_scheduler: CosineAnnealingWarmRestarts
 LR_scheduler_params:
