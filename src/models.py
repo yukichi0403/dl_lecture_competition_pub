@@ -82,10 +82,10 @@ class CustomConvNextModel(nn.Module):
             return main_out
 
 
-class CustomEfficientNetModel(nn.Module):
+class CustomModel(nn.Module):
     def __init__(self, model_name, num_classes: int = 1854, pretrained: bool = True, 
                   aux_loss_ratio: float = None, dropout_rate: float = 0):
-        super(CustomEfficientNetModel, self).__init__()
+        super(CustomModel, self).__init__()
         self.aux_loss_ratio = aux_loss_ratio
         self.encoder = timm.create_model(model_name, pretrained=pretrained)
         self.features = nn.Sequential(*list(self.encoder.children())[:-2])
