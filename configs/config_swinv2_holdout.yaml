@@ -7,15 +7,15 @@ num_classes: 1854
 aux_loss_ratio: 0.6 
 dropout_rate: 0.1
 
-expname: swintransformer_tiny_holdout_aux_dropout
+expname: swintransformer_base_holdout_aux_dropout
 ver: 1
 
-backbone: swinv2_tiny_window8_256.ms_in1k
+backbone: swinv2-base-patch4-window8-256
 
 LR_scheduler: CosineAnnealingWarmRestarts
 LR_scheduler_params:
-  num_warmup_steps: 2054 * 2
-  num_training_steps: 2054 * 20
+  num_warmup_steps: 4108
+  num_training_steps: 41080
 
 device: cuda:0
 num_workers: 4
