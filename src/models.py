@@ -48,7 +48,7 @@ class CustomConvNextModel(nn.Module):
                  aux_loss_ratio: float = None, dropout_rate: float = 0.05):
         super(CustomConvNextModel, self).__init__()
         self.aux_loss_ratio = aux_loss_ratio
-        self.encoder = timm.create_model(model_name, pretrained=pretrained
+        self.encoder = timm.create_model(model_name, pretrained=pretrained,
                                             drop_path_rate=dropout_rate)
         self.features = nn.Sequential(*list(self.encoder.children())[:-2])
         self.GAP = nn.AdaptiveAvgPool2d(1)
