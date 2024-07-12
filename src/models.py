@@ -11,7 +11,8 @@ class CustomSwinTransformerModel(nn.Module):
                  aux_loss_ratio: float = None, dropout_rate: float = 0.05):
         super(CustomSwinTransformerModel, self).__init__()
         self.aux_loss_ratio = aux_loss_ratio
-        self.encoder = timm.create_model(model_name, pretrained=pretrained)
+        self.encoder = timm.create_model(model_name, pretrained=pretrained,
+                                            drop_path_rate=dropout_rate)
         self.features = nn.Sequential(*list(self.encoder.children())[:-1])
         self.GAP = SelectAdaptivePool2d(pool_type='avg', input_fmt='NHWC',flatten=True)
         self.decoder = nn.Sequential(
@@ -47,7 +48,8 @@ class CustomConvNextModel(nn.Module):
                  aux_loss_ratio: float = None, dropout_rate: float = 0.05):
         super(CustomConvNextModel, self).__init__()
         self.aux_loss_ratio = aux_loss_ratio
-        self.encoder = timm.create_model(model_name, pretrained=pretrained)
+        self.encoder = timm.create_model(model_name, pretrained=pretrained
+                                            drop_path_rate=dropout_rate)
         self.features = nn.Sequential(*list(self.encoder.children())[:-2])
         self.GAP = nn.AdaptiveAvgPool2d(1)
         self.layer_norm = LayerNorm2d(self.encoder.num_features)
@@ -87,7 +89,8 @@ class CustomModel(nn.Module):
                   aux_loss_ratio: float = None, dropout_rate: float = 0):
         super(CustomModel, self).__init__()
         self.aux_loss_ratio = aux_loss_ratio
-        self.encoder = timm.create_model(model_name, pretrained=pretrained)
+        self.encoder = timm.create_model(model_name, pretrained=pretrained,
+                                          drop_path_rate=dropout_rate)
         self.features = nn.Sequential(*list(self.encoder.children())[:-2])
         self.GAP = nn.AdaptiveAvgPool2d(1)
         self.decoder = nn.Sequential(
